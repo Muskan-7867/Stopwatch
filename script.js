@@ -1,41 +1,72 @@
-let [milliseconds,seconds,minutes,hours] = [0,0,0,0];
-let timeref = document.querySelector('.timerdisplay');
-let int;
+// script.js
+let startTime;
+let updatedTime;
+let difference;
+let tInterval;
+let running = false;
+let reset = false;
+let laps = [];
 
-document.getElementById('starttimer').addEventListener('click',()=>{
-    int = setInterval(displaytimer,10);
-});
-document.getElementById('pausetimer')
-.addEventListener('click',()=>{
-    clearInterval(int);
-});
+const display = document.getElementById('display');
+const startPauseButton = document.getElementById('startPause');
+const resetButton = document.getElementById('reset');
+const lapButton = document.getElementById('lap');
+const lapsList = document.getElementById('laps');
 
-document.getElementById('resettimer')
-.addEventListener('click',() =>{
-    clearInterval(int);
-    [milliseconds,seconds,minutes,hours] = [0,0,0,0];
-    timeref.innerHTML = '00 : 00 : 00 : 000' ;
-});
+startPauseButton.addEventListener('click', startPause);
+resetButton.addEventListener('click', resetStopwatch);
+lapButton.addEventListener('click', recordLap);
 
-function displaytimer(){
-    milliseconds +=10;
-    if(milliseconds += 1000){
-        milliseconds = 0;
-        seconds++;
-        if(seconds == 60){
-            seconds = 0;
-            minutes++;
-            if(minutes ==60){
-                minutes = 0;
-                hours++;
-
-            }
-        }
+function startPause() {
+    if (!running) {
+        startTime = new Date().getTime();
+        tInterval = setInterval(getShowTime, 1);
+        running = true;
+        startPauseButton.textContent = 'Pause';
+        reset = false;
+    } else {
+        clearInterval(tInterval);
+        running = false;
+        startPauseButton.textContent = 'Start';
     }
-    let h = hours < 10 ? '0'  + hours:hours;
-    let m = minutes < 10 ? '0' + minutes:minutes;
-    let s = seconds < 10 ? '0' + seconds:seconds;
-    let ms = milliseconds < 10 ? '00' + milliseconds : 
-    milliseconds < 100 ? '0' + milliseconds : milliseconds;
-    timeref.innerHTML = `${h} : ${m} : ${s} :${ms}`
+}
+
+function resetStopwatch() {
+    clearInterval(tInterval);
+    reset = true;
+    running = false;
+    startPauseButton.textContent = 'Start';
+    display.textContent = '00:00:00.000';
+    laps = [];
+    updateLaps();
+}
+
+function recordLap() {
+    if (running) {
+        const lapTime = display.textContent;
+        laps.push(lapTime);
+        updateLaps();
+    }
+}
+
+function updateLaps() {
+    lapsList.innerHTML = laps.map(lap => `<li>${lap}</li>`).join('');
+}
+
+function getShowTime() {
+    updatedTime = new Date().getTime();
+    difference = updatedTime - startTime;
+
+    let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+    let milliseconds = Math.floor((difference % 1000));
+
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+    milliseconds = (milliseconds < 100) ? "0" + milliseconds : milliseconds;
+    milliseconds = (milliseconds < 10) ? "00" + milliseconds : milliseconds;
+
+    display.textContent = hours + ":" + minutes + ":" + seconds + "." + milliseconds;
 }

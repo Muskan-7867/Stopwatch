@@ -7,16 +7,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="timerdisplay">
-            00 : 00 : 00 : 000
+    <div class="stopwatch">
+        <h1>Stopwatch</h1>
+        <div id="display">00:00:00.000</div>
+        <div class="controls">
+            <button id="startPause">Start</button>
+            <button id="reset">Reset</button>
+            <button id="lap">Lap</button>
         </div>
-        <div class="buttons">
-            <button id="starttimer">Start</button>
-            <button id="pausetimer">Pause</button>
-            <button id="resettimer">Reset</button>
-        </div>
-
+        <ul id="laps"></ul>
     </div>
     <script src="script.js"></script>
 </body>
