@@ -1,72 +1,67 @@
-// script.js
+let timer;
+let isRunning = false;
 let startTime;
-let updatedTime;
-let difference;
-let tInterval;
-let running = false;
-let reset = false;
+let elapsedTime = 0;
 let laps = [];
 
 const display = document.getElementById('display');
-const startPauseButton = document.getElementById('startPause');
+const startStopButton = document.getElementById('startStop');
 const resetButton = document.getElementById('reset');
 const lapButton = document.getElementById('lap');
-const lapsList = document.getElementById('laps');
+const lapsList = document.getElementById('lapsList');
 
-startPauseButton.addEventListener('click', startPause);
-resetButton.addEventListener('click', resetStopwatch);
-lapButton.addEventListener('click', recordLap);
+startStopButton.addEventListener('click', startStop);
+resetButton.addEventListener('click', reset);
+lapButton.addEventListener('click', lap);
 
-function startPause() {
-    if (!running) {
-        startTime = new Date().getTime();
-        tInterval = setInterval(getShowTime, 1);
-        running = true;
-        startPauseButton.textContent = 'Pause';
-        reset = false;
+function startStop() {
+    if (isRunning) {
+        clearInterval(timer);
+        isRunning = false;
+        startStopButton.textContent = 'Start';
     } else {
-        clearInterval(tInterval);
-        running = false;
-        startPauseButton.textContent = 'Start';
+        startTime = Date.now() - elapsedTime;
+        timer = setInterval(updateDisplay, 10);
+        isRunning = true;
+        startStopButton.textContent = 'Stop';
     }
 }
 
-function resetStopwatch() {
-    clearInterval(tInterval);
-    reset = true;
-    running = false;
-    startPauseButton.textContent = 'Start';
-    display.textContent = '00:00:00.000';
+function reset() {
+    clearInterval(timer);
+    isRunning = false;
+    startStopButton.textContent = 'Start';
+    elapsedTime = 0;
+    display.textContent = '00.00.00:00';
     laps = [];
     updateLaps();
 }
 
-function recordLap() {
-    if (running) {
-        const lapTime = display.textContent;
-        laps.push(lapTime);
+function lap() {
+    if (isRunning) {
+        laps.push(elapsedTime);
         updateLaps();
     }
 }
 
-function updateLaps() {
-    lapsList.innerHTML = laps.map(lap => `<li>${lap}</li>`).join('');
+function updateDisplay() {
+    elapsedTime = Date.now() - startTime;
+    const time = new Date(elapsedTime);
+    const minutes = time.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = time.getUTCSeconds().toString().padStart(2, '0');
+    const milliseconds = time.getUTCMilliseconds().toString().padStart(3, '0');
+    display.textContent = `00.${minutes}.${seconds}:${milliseconds}`;
 }
 
-function getShowTime() {
-    updatedTime = new Date().getTime();
-    difference = updatedTime - startTime;
-
-    let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    let seconds = Math.floor((difference % (1000 * 60)) / 1000);
-    let milliseconds = Math.floor((difference % 1000));
-
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
-    milliseconds = (milliseconds < 100) ? "0" + milliseconds : milliseconds;
-    milliseconds = (milliseconds < 10) ? "00" + milliseconds : milliseconds;
-
-    display.textContent = hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+function updateLaps() {
+    lapsList.innerHTML = '';
+    laps.forEach((lapTime, index) => {
+        const time = new Date(lapTime);
+        const minutes = time.getUTCMinutes().toString().padStart(2, '0');
+        const seconds = time.getUTCSeconds().toString().padStart(2, '0');
+        const milliseconds = time.getUTCMilliseconds().toString().padStart(3, '0');
+        const lapElement = document.createElement('li');
+        lapElement.textContent = `Lap ${index + 1}: 00.${minutes}.${seconds}:${milliseconds}`;
+        lapsList.appendChild(lapElement);
+    });
 }
